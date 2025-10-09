@@ -14,3 +14,9 @@ mkdir bacterias
 ```bash
 cp -r /home/lab13/Documents/Pseudomonas/* /home/lab13/Documents/Ecologia_AnalisisGenomico/TorresAna/bacterias/
 ```
+confirmar que todos los archivos esten dentro de nuestra carpeta llamada bacterias
+
+## 
+
+
+
