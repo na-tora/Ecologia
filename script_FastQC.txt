@@ -1,0 +1,32 @@
+narojas@Ana:~$ cd /mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1
+narojas@Ana:/mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1$ ls -lh
+total 942M
+-rwxrwxrwx 1 narojas narojas 461M Sep 23 21:10 Ps2_R1.fastq.gz
+-rwxrwxrwx 1 narojas narojas 481M Sep 23 21:14 Ps2_R2.fastq.gz
+narojas@Ana:/mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1$ mkdir -p PRUEBA1_RESULTADOS
+
+##Para descargar fastqc
+narojas@Ana:/mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1$ sudo apt update
+##Pide contraseña
+[sudo] password for narojas:
+##Para verificar la versión
+narojas@Ana:/mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1$ fastqc --version
+#Tiene que salir asi
+FastQC v0.12.1
+#Esto es para ya correr las muestras
+narojas@Ana:/mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1$ fastqc *.fastq.gz -o PRUEBA1_RESULTADOS
+#Para sacar un reporte general
+narojas@Ana:/mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1/PRUEBA1_RESULTADOS$ multiqc .
+
+  /// MultiQC 🔍 | v1.18
+
+|           multiqc | MultiQC Version v1.31 now available!
+|           multiqc | Search path : /mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1/PRUEBA1_RESULTADOS
+|         searching | ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 4/4
+|            fastqc | Found 2 reports
+|           multiqc | Report      : multiqc_report.html
+|           multiqc | Data        : multiqc_data
+|           multiqc | Could not include file 'assets/js/packages/jszip.min.js': [Errno 2] No such file or directory: '/tmp/tmpnxa_rorp/assets/js/packages/jszip.min.js'
+|           multiqc | MultiQC complete
+#aca lo abre en la carpeta en la que lo guardamos 
+narojas@Ana:/mnt/c/Users/Microsoft/OneDrive/Desktop/Molecular/Prueba1/PRUEBA1_RESULTADOS$ explorer.exe .
