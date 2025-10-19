@@ -22,7 +22,6 @@ MINLEN:50 → descarta lecturas <50 nt después de recorte
 sabremos q estan instaladas si todas nos da un número de versión.
 ```
 fastp --version
-fastqc --version
 multiqc --version
 ```
 # 2. Creamos las carpetas necesarias
