@@ -18,39 +18,81 @@ TRAILING:3 → quita bases con calidad <3 al final
 SLIDINGWINDOW:4:20 → ventana de 4 bases, recorta cuando el promedio <20
 
 MINLEN:50 → descarta lecturas <50 nt después de recorte
-# 1. Instalar Conda (en caso de que no lo tengamos)
-Usaremos el comando wget para descargar el instalador
+# 1. Verificamos que las herramientas estén instaladas.
+sabremos q estan instaladas si todas nos da un número de versión.
 ```
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+fastp --version
+fastqc --version
+multiqc --version
 ```
-#### 1.2 Verifica que se descargó
-```
-ls -lh Miniconda3-latest-Linux-x86_64.sh
-```
-#### 1.3 Ejecuta el instalador
-```
-bash Miniconda3-latest-Linux-x86_64.sh
-```
-#### 1.4 Activa Conda
-```
-source ~/.bashrc
-```
-#### 1.5 Verificar la versión 
-```
-conda --version
-```
-# 2. Preparar el entorno 
-### opcional: crear y activar un entorno conda (recomendado)
-```
-conda create -n qc_env -c conda-forge -c bioconda fastqc multiqc trimmomatic fastp -y
-conda activate qc_env
-```
-## 2. FastQC inicial (evaluación antes del recorte)
-```
-mkdir -p 01_fastqc_inicial
+# 2. Creamos las carpetas necesarias
+Trimmed → donde guardará los archivos recortados sin adaptadores. 
 
-fastqc -t 4 *.fastq.gz -o 01_fastqc_inicial/
+FastQC_afterTrim → reportes de FastQC después del trimming.
+
+logs → donde se guardan los registros de ejecución; es decir todo el proceso. 
 ```
+mkdir -p Trimmed FastQC_afterTrim logs
+```
+# 3. Definimos el número de núcleos
+Esto permite que el análisis sea más rápido; va a depender de tu computadora.Puedes cambiar el número 4 por la cantidad de núcleos disponibles (por ejemplo 2, 8 o 12).
+```
+NTHREADS=4
+```
+# 4. Bucle para recorrer los archivos FASTQ
+El siguiente bloque busca todos los archivos que terminan en _R1.fastq.gz (cadena sentido) y busca su pareja _R2.fastq.gz (cadena antisentido).
+```
+for r1 in *_R1.fastq.gz; do
+  r2="${r1/_R1/_R2}"
+  if [ -f "$r2" ]; then
+    sample="${r1%%_R1*}"
+    echo "Procesando: $sample"
+```
+# 5. fastp
+Limpia las lecturas de los adaptadores
+
+--detect_adapter_for_pe → detecta automáticamente adaptadores
+
+--qualified_quality_phred 20 → corta bases con calidad baja (< Q20)
+
+--length_required 50 → descarta lecturas más cortas que 50 bp
+
+--html y --json → genera reportes por muestra
+
+> logs/... → guarda los mensajes de consola en archivos de log
+```
+fastp \
+  -i "$r1" -I "$r2" \
+  -o "Trimmed/${sample}_R1.trim.fastq.gz" \
+  -O "Trimmed/${sample}_R2.trim.fastq.gz" \
+  --detect_adapter_for_pe \
+  --qualified_quality_phred 20 \
+  --length_required 50 \
+  --thread "$NTHREADS" \
+  --html "Trimmed/${sample}_fastp.html" \
+  --json "Trimmed/${sample}_fastp.json" \
+  > "logs/${sample}_fastp.log" 2>&1
+```
+# 6. Si no encuentra la pareja
+La siguiente parte del código evita errores si falta un archivo _R2 y deja constancia en logs/missing_pairs.txt.
+```
+else
+  echo "Pareja no encontrada para $r1 -> $r2" | tee -a logs/missing_pairs.txt
+fi
+```
+# 7. FastQC sobre archivos recortados
+Esto crea reportes de calidad nuevos después del trimming (ya sin adaptadores) en la carpeta FastQC_afterTrim.
+```
+fastqc -t 4 Trimmed/*_R1.trim.fastq.gz Trimmed/*_R2.trim.fastq.gz -o FastQC_afterTrim
+```
+# 8. Resumen global
+Crea un archivo llamado multiqc_report.html con el resumen global.
+```
+cd FastQC_afterTrim
+multiqc .
+```
+
+
 
 
 
